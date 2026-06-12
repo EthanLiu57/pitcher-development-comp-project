@@ -1,12 +1,11 @@
-# ==========================================
+
 # PITCH-LEVEL TRANSITION DATABASE
-# ==========================================
 
 library(dplyr)
 
 cat("Building pitch-level transition database...\n\n")
 
-# We need the individual pitch distance matrices from Step 2
+# We need the individual pitch distance matrices 
 # These are in results_step2
 
 if (!exists("results_step2")) {
@@ -16,9 +15,8 @@ if (!exists("results_step2")) {
 
 cat(sprintf("Pitch types available: %s\n\n", paste(names(results_step2), collapse = ", ")))
 
-# ==========================================
+
 # BUILD TRANSITION DATABASE FOR EACH PITCH TYPE
-# ==========================================
 
 pitch_transitions_full <- list()
 
@@ -161,9 +159,7 @@ for (pt in names(pitch_transitions_full)) {
   cat(sprintf("  %s: %d transitions\n", pt, n_trans))
 }
 
-# ==========================================
 # PITCH-LEVEL SIMULATION FUNCTION
-# ==========================================
 
 simulate_pitch_development <- function(current_pitcher_id,
                                        current_year,
@@ -369,121 +365,6 @@ simulate_pitch_development <- function(current_pitcher_id,
   ))
 }
 
-# ==========================================
-# PITCH-LEVEL VISUALIZATION
-# ==========================================
 
-visualize_pitch_development <- function(sim_results, metric = "release_speed") {
-  
-  library(ggplot2)
-  
-  current_kde <- sim_results$current_kdes[[metric]]
-  
-  if (is.null(current_kde)) {
-    cat(sprintf("Metric %s not available\n", metric))
-    return(NULL)
-  }
-  
-  # Extract simulated distributions
-  sim_data <- data.frame()
-  
-  for (i in 1:length(sim_results$simulated_pitches)) {
-    
-    sim_pitch <- sim_results$simulated_pitches[[i]]
-    sim_kde <- sim_pitch[[metric]]
-    
-    if (!is.null(sim_kde)) {
-      sim_data <- rbind(sim_data, data.frame(
-        grid = sim_kde$grid,
-        density = sim_kde$density,
-        simulation = i
-      ))
-    }
-  }
-  
-  # Calculate percentiles
-  percentile_data <- sim_data %>%
-    group_by(grid) %>%
-    summarise(
-      p05 = quantile(density, 0.05),
-      p25 = quantile(density, 0.25),
-      p50 = quantile(density, 0.50),
-      p75 = quantile(density, 0.75),
-      p95 = quantile(density, 0.95),
-      .groups = 'drop'
-    )
-  
-  # Plot
-  p <- ggplot() +
-    geom_ribbon(data = percentile_data,
-                aes(x = grid, ymin = p05, ymax = p95),
-                fill = "lightblue", alpha = 0.3) +
-    geom_ribbon(data = percentile_data,
-                aes(x = grid, ymin = p25, ymax = p75),
-                fill = "steelblue", alpha = 0.4) +
-    geom_line(data = percentile_data,
-              aes(x = grid, y = p50),
-              color = "darkblue", size = 1.5) +
-    geom_line(data = data.frame(grid = current_kde$grid,
-                                density = current_kde$density),
-              aes(x = grid, y = density),
-              color = "red", size = 1.5, linetype = "dashed") +
-    labs(title = sprintf("%s %s Development Projection", 
-                         sim_results$player_name,
-                         sim_results$pitch_type),
-         subtitle = sprintf("%s: Current (red) vs. 1 year ahead (blue)\n%d simulations from %d similar pitchers",
-                            metric,
-                            sim_results$n_simulations,
-                            nrow(sim_results$similar_pitchers)),
-         x = metric,
-         y = "Density") +
-    theme_minimal() +
-    theme(plot.title = element_text(size = 16, face = "bold"))
-  
-  print(p)
-  return(p)
-}
-
-# ==========================================
-# TEST PITCH-LEVEL SIMULATION
-# ==========================================
-
-cat("\n========== TESTING PITCH-LEVEL SIMULATION ==========\n\n")
-
-# Find a pitcher with FF data
-ff_data <- pitch_transitions_full[["FF"]]
-
-if (!is.null(ff_data) && length(ff_data$transitions) > 0) {
-  
-  # Use first transition's starting point
-  test_pitcher <- ff_data$transitions[[1]]$pitcher_id
-  test_year <- ff_data$transitions[[1]]$year_from
-  
-  cat(sprintf("Test: %s FF (%s)\n\n", test_pitcher, test_year))
-  
-  sim_pitch <- simulate_pitch_development(
-    current_pitcher_id = test_pitcher,
-    current_year = test_year,
-    pitch_type = "FF",
-    k_similar = 20,
-    n_simulations = 1000,
-    pitch_transitions_data = pitch_transitions_full
-  )
-  
-  # Visualize
-  p1 <- visualize_pitch_development(sim_pitch, "release_speed")
-  ggsave("~/Downloads/pitch_sim_velocity.png", p1, width = 12, height = 7)
-  
-  p2 <- visualize_pitch_development(sim_pitch, "release_spin_rate")
-  ggsave("~/Downloads/pitch_sim_spin.png", p2, width = 12, height = 7)
-  
-  cat("\n✓ Pitch-level simulation complete!\n")
-}
-
-cat("\n========== COMPLETE ==========\n")
-cat("\nYou now have:\n")
-cat("  - Arsenal-level simulation (full pitcher development)\n")
-cat("  - Pitch-level simulation (individual pitch development)\n")
-cat("  - Both with full KDE reconstruction\n")
 cat("  - Both with visualization functions\n")
 cat("\nReady for Shiny app integration!\n")
