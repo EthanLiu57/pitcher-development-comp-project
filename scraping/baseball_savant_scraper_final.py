@@ -149,7 +149,7 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
                     data_rows = rows[1:]  # Skip header
                     
                     if pitcher_index >= len(data_rows):
-                        print("  ⚠️  Row not found")
+                        print("    Row not found")
                         break
                     
                     target_row = data_rows[pitcher_index]
@@ -217,7 +217,7 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
                             break
                     
                     if not graphs_div:
-                        print(f"  ⚠️  Could not find Graphs button after {max_attempts} attempts")
+                        print(f"    Could not find Graphs button after {max_attempts} attempts")
                         failed += 1
                         pitcher_index += 1
                         continue
@@ -241,7 +241,7 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
                         popup = None
                     
                     if not popup:
-                        print("  ⚠️  Popup menu did not appear")
+                        print("    Popup menu did not appear")
                         failed += 1
                         pitcher_index += 1
                         continue
@@ -252,7 +252,7 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
                         csv_div = popup.find_element(By.CLASS_NAME, "csv")
                         driver.execute_script("arguments[0].click();", csv_div)
                     except Exception as e:
-                        print(f"  ⚠️  Could not find CSV button in popup: {e}")
+                        print(f"    Could not find CSV button in popup: {e}")
                         failed += 1
                         pitcher_index += 1
                         continue
@@ -269,7 +269,7 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
                             break
                     
                     if not new_file:
-                        print("  ⚠️  Download did not complete")
+                        print("    Download did not complete")
                         failed += 1
                         pitcher_index += 1
                         continue
@@ -294,11 +294,11 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
                     break  # Successfully processed this pitcher, move to next
                     
                 except Exception as e:
-                    print(f"  ❌ Error: {e}")
+                    print(f"   Error: {e}")
                     
                     # Check if it's a session error (browser crashed)
                     if 'invalid session id' in str(e).lower() or 'session' in str(e).lower():
-                        print("  🔄 Browser session lost - restarting browser...")
+                        print("   Browser session lost - restarting browser...")
                         try:
                             driver.quit()
                         except:
@@ -308,9 +308,9 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
                         try:
                             service = Service(chromedriver_path)
                             driver = webdriver.Chrome(service=service, options=chrome_options)
-                            print("  ✓ Browser restarted")
+                            print("   Browser restarted")
                         except Exception as restart_error:
-                            print(f"  ❌ Could not restart browser: {restart_error}")
+                            print(f"   Could not restart browser: {restart_error}")
                             failed += 1
                             pitcher_index += 1
                             break
@@ -324,16 +324,14 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
         total_time = time.time() - start_time
         
         # Summary
-        print(f"\n{'='*60}")
         print("SCRAPING COMPLETE")
-        print(f"{'='*60}")
-        print(f"✓ Successful: {successful}")
-        print(f"✗ Failed: {failed}")
+        print(f" Successful: {successful}")
+        print(f" Failed: {failed}")
         if skipped > 0:
-            print(f"⊝ Skipped separator rows: {skipped}")
-        print(f"⏱  Total time: {int(total_time/60)} minutes {int(total_time%60)} seconds")
+            print(f" Skipped separator rows: {skipped}")
+        print(f"  Total time: {int(total_time/60)} minutes {int(total_time%60)} seconds")
         if successful > 0:
-            print(f"⏱  Average: {total_time/successful:.1f} seconds per pitcher")
+            print(f"  Average: {total_time/successful:.1f} seconds per pitcher")
         
         # Check downloads
         csv_files = glob.glob(os.path.join(output_dir, "*.csv"))
@@ -341,21 +339,20 @@ def scrape_pitchers(year, num_pitchers=None, output_dir=None):
         
         if csv_files:
             total_size_mb = sum(os.path.getsize(f) for f in csv_files) / (1024*1024)
-            print(f"📊 Total size: {total_size_mb:.1f} MB")
-            print(f"\n✅ All files saved to:\n   {output_dir}")
+            print(f" Total size: {total_size_mb:.1f} MB")
+            print(f"\n All files saved to:\n   {output_dir}")
         
         return successful, failed
         
     except Exception as e:
-        print(f"\n❌ Fatal error: {e}")
+        print(f"\n Fatal error: {e}")
         import traceback
         traceback.print_exc()
         return 0, 0
 
 
 def main():
-    print("⚾ Baseball Savant Minor League Scraper")
-    print("="*60)
+    print(" Baseball Savant Minor League Scraper")
     
     year = input("Which year? (e.g., 2025): ").strip()
     if not year:
@@ -366,9 +363,9 @@ def main():
     num_pitchers = int(num_input) if num_input else None
     
     if num_pitchers:
-        print(f"\n⚠️  Will scrape {num_pitchers} pitchers")
+        print(f"\n  Will scrape {num_pitchers} pitchers")
     else:
-        print(f"\n⚠️  Will scrape ALL pitchers (this may take hours!)")
+        print(f"\n  Will scrape ALL pitchers (this may take hours!)")
     
     confirm = input("Continue? (y/n): ").strip().lower()
     
