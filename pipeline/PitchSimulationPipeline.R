@@ -1,15 +1,9 @@
-# ==========================================
 # COMPLETE PITCH SIMULATION PIPELINE
-# ==========================================
 
 library(RSQLite)
 library(dplyr)
 
-cat("========== PITCH-LEVEL SIMULATION SYSTEM ==========\n\n")
-
-# ==========================================
 # FUNCTION: SIMULATE PITCH DEVELOPMENT
-# ==========================================
 
 simulate_pitch_development <- function(current_pitcher_id,
                                        current_year,
@@ -173,9 +167,7 @@ simulate_pitch_development <- function(current_pitcher_id,
   ))
 }
 
-# ==========================================
 # FUNCTION: STORE PITCH SIMULATION
-# ==========================================
 
 store_pitch_simulation <- function(sim_result, sim_con, pitch_type) {
   
@@ -284,9 +276,7 @@ store_pitch_simulation <- function(sim_result, sim_con, pitch_type) {
   }
 }
 
-# ==========================================
 # RUN PITCH SIMULATIONS
-# ==========================================
 
 cat("Running pitch-level simulations...\n\n")
 
