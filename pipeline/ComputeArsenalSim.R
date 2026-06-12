@@ -1,22 +1,10 @@
-# ==========================================
 # PRE-COMPUTE ALL SIMULATIONS FOR SHINY APP
-# ==========================================
 
 library(RSQLite)
 library(dplyr)
 library(ggplot2)
 
-cat("========== PRE-COMPUTATION PIPELINE ==========\n\n")
-
-cat("This will:\n")
-cat("1. Run simulations for every pitcher-year (arsenal + individual pitches)\n")
-cat("2. Store simulated distributions in SQLite database\n")
-cat("3. Generate and save visualization data\n")
-cat("4. Create lookup tables for fast Shiny retrieval\n\n")
-
-# ==========================================
 # CREATE SIMULATION DATABASE
-# ==========================================
 
 sim_db_path <- "~/Downloads/simulation_results.db"
 
@@ -119,11 +107,8 @@ dbExecute(sim_con, "CREATE INDEX IF NOT EXISTS idx_arsenal_sim ON arsenal_simula
 dbExecute(sim_con, "CREATE INDEX IF NOT EXISTS idx_pitch_sim ON pitch_simulations(pitcher_id, year, pitch_type)")
 dbExecute(sim_con, "CREATE INDEX IF NOT EXISTS idx_summary ON simulation_summary(pitcher_id, year)")
 
-cat("✓ Database created\n\n")
 
-# ==========================================
 # ARSENAL SIMULATION BATCH PROCESSOR
-# ==========================================
 
 process_arsenal_simulations <- function(transition_deltas_full,
                                         dist_matrix,
@@ -204,9 +189,7 @@ process_arsenal_simulations <- function(transition_deltas_full,
   cat(sprintf("\n\n✓ Arsenal simulations complete in %.1f minutes\n\n", elapsed))
 }
 
-# ==========================================
 # STORAGE FUNCTION FOR ARSENAL SIMULATIONS
-# ==========================================
 
 store_arsenal_simulation <- function(sim_result, sim_con) {
   
@@ -331,16 +314,13 @@ store_arsenal_simulation <- function(sim_result, sim_con) {
   }
 }
 
-# ==========================================
 # PITCH-LEVEL SIMULATION BATCH PROCESSOR
-# ==========================================
 
 process_pitch_simulations <- function(pitch_transitions_full,
                                       sim_con,
                                       n_simulations = 500,
                                       k_similar = 20) {
   
-  cat("========== PITCH-LEVEL SIMULATIONS ==========\n\n")
   
   total_combinations <- 0
   
@@ -424,9 +404,7 @@ process_pitch_simulations <- function(pitch_transitions_full,
   cat(sprintf("\n\n✓ Pitch simulations complete in %.1f minutes\n\n", elapsed))
 }
 
-# ==========================================
 # STORAGE FUNCTION FOR PITCH SIMULATIONS
-# ==========================================
 
 store_pitch_simulation <- function(sim_result, sim_con, pitch_type) {
   
@@ -538,11 +516,7 @@ store_pitch_simulation <- function(sim_result, sim_con, pitch_type) {
   }
 }
 
-# ==========================================
 # RUN EVERYTHING
-# ==========================================
-
-cat("========== STARTING PRE-COMPUTATION ==========\n\n")
 
 
 # Arsenal simulations
@@ -565,6 +539,3 @@ process_pitch_simulations(
 # Close database
 dbDisconnect(sim_con)
 
-cat("\n========== PRE-COMPUTATION COMPLETE ==========\n")
-cat(sprintf("\nDatabase saved: %s\n", sim_db_path))
-cat("\nYou can now build a lightning-fast Shiny app that just queries this database!\n")
