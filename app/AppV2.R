@@ -11,8 +11,7 @@ library(plotly)
 
 kde_db             <- "~/Downloads/pitcher_kde_distributions.db"
 sim_db             <- "~/Downloads/simulation_results.db"
-pitcher_wide_path  <- "~/Downloads/pitcher_wide.rds"
-
+pitcher_wide  <- read.csv("~/Downloads/pitcher_wide.csv)"
 pitcher_lookup <- read.csv("~/Downloads/pitcher_lookup_fixed.csv")
 
 # ---------- build pitcher list ----------
@@ -79,13 +78,11 @@ pitch_type_names <- c(
   "KC" = "Knuckle Curve"
 )
 
-# ==========================================
-# ADDITION 1 of 2: add_pitch_features()
+#  add_pitch_features()
 # Derives all calculated columns from raw
 # Statcast data. Each block only runs if the
 # required source columns are present, so it
 # will never crash on a partial upload.
-# ==========================================
 add_pitch_features <- function(df) {
   has_cols <- function(...) all(c(...) %in% colnames(df))
   
@@ -123,11 +120,8 @@ add_pitch_features <- function(df) {
   
   df
 }
-# ==========================================
 
-# ==========================================
 # UI
-# ==========================================
 
 ui <- dashboardPage(
   
@@ -300,7 +294,7 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
   
-  # ---------- MUST BE FIRST: reactive values ----------
+  #  reactive values
   rv <- reactiveValues(
     uploaded_data    = NULL,
     quick_results    = NULL,
@@ -362,7 +356,7 @@ server <- function(input, output, session) {
     ", params = list(p$pitcher_id, p$year))$pitch_type
   })
   
-  # ---------- helper: extract KDE modes safely ----------
+  # helper: extract KDE modes safely
   extract_kde_modes <- function(kde_raw) {
     if (nrow(kde_raw) == 0)
       return(data.frame(metric = character(), kde_mode = numeric(),
@@ -375,7 +369,7 @@ server <- function(input, output, session) {
       dplyr::select(metric, kde_mode = grid_value, sim_median = sim_p50)
   }
   
-  # ---------- Pitch stats UI ----------
+  #  Pitch stats UI
   output$pitch_stats_ui <- renderUI({
     pitch_types <- pitcher_pitch_types()
     if (length(pitch_types) == 0)
@@ -390,7 +384,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # ---------- Pitch stats table ----------
+  #  Pitch stats table
   output$pitch_stats_table <- renderDT({
     
     req(input$selected_pitch_stats)
@@ -477,7 +471,7 @@ server <- function(input, output, session) {
       )
   })
   
-  # ---------- Similar pitchers table ----------
+  #  Similar pitchers table
   output$similar_pitchers_table <- renderDT({
     
     p <- current_pitcher()
@@ -534,7 +528,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # ---------- Arsenal projection plot ----------
+  # Arsenal projection plot 
   output$arsenal_plot <- renderPlotly({
     
     p <- current_pitcher()
@@ -599,7 +593,7 @@ server <- function(input, output, session) {
       )
   })
   
-  # ---------- Pitch projection UI ----------
+  # Pitch projection UI
   output$pitch_projection_ui <- renderUI({
     pitch_types <- pitcher_pitch_types()
     if (length(pitch_types) == 0)
@@ -617,7 +611,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # ---------- Pitch projection plot ----------
+  #  Pitch projection plot
   output$pitch_proj_plot <- renderPlotly({
     
     req(input$selected_pitch_proj, input$pitch_proj_metric)
@@ -686,7 +680,7 @@ server <- function(input, output, session) {
       )
   })
   
-  # ---------- CSV upload ----------
+  # CSV upload
   observeEvent(input$pitch_csv, {
     req(input$pitch_csv)
     tryCatch({
@@ -711,7 +705,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # ---------- Quick analysis ----------
+  #  Quick analysis
   observeEvent(input$quick_analyze, {
     req(rv$uploaded_data)
     withProgress(message = 'Quick Analysis Running...', value = 0, {
@@ -767,7 +761,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # ---------- Quick results UI ----------
+  # Quick results UI 
   output$quick_results_ui <- renderUI({
     req(rv$quick_results)
     results <- rv$quick_results
@@ -813,7 +807,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # ---------- Full analysis ----------
+  #  Full analysis 
   observeEvent(input$full_analyze, {
     req(rv$uploaded_data)
     rv$analysis_running <- TRUE
@@ -853,7 +847,7 @@ server <- function(input, output, session) {
     showNotification("Full analysis complete!", type = "message", duration = 5)
   })
   
-  # ---------- Full results UI ----------
+  #  Full results UI 
   output$full_results_ui <- renderUI({
     req(rv$full_results)
     results              <- rv$full_results
@@ -909,7 +903,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # ---------- New pitcher KDE plots ----------
+  #  New pitcher KDE plots
   observe({
     req(rv$full_results)
     for (pt in names(rv$full_results$kde_results)) {
@@ -944,7 +938,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # ---------- Save to database ----------
+  #  Save to database
   observeEvent(input$save_pitcher, {
     req(rv$full_results, input$new_pitcher_id, input$new_pitcher_name,
         nchar(trimws(input$new_pitcher_id)) > 0,
