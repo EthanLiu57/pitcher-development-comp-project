@@ -1,6 +1,6 @@
 library(DBI)
 library(RSQLite)
-
+#Do for each year
 con <- dbConnect(RSQLite::SQLite(), "~/Downloads/baseball_savant_2025.db")
 
 columns <- dbGetQuery(con, "PRAGMA table_info(pitches)")
