@@ -15,13 +15,13 @@ The core idea is that a pitcher's arsenal — the physical characteristics of ea
 ## Screenshots
 
 **Current pitch metrics with league percentiles and projections**
-![Stats table showing pitch metrics, percentile color coding, and projected values](screenshots/screenshot_stats_table.png)
+![Stats table showing pitch metrics, percentile color coding, and projected values](screenshots/screenshot_statstable.webp)
 
 **Nearest-neighbor comparable pitchers ranked by Hellinger distance**
-![Similar pitchers table with distance scores and similarity weights](screenshots/screenshot_comparables.png)
+![Similar pitchers table with distance scores and similarity weights](screenshots/screenshot_similar_pitchers.webp)
 
 **Simulated development projection for a single pitch metric**
-![KDE projection plot showing current distribution, projected median, and 50%/90% simulation bands](screenshots/screenshot_projection.png)
+![KDE projection plot showing current distribution, projected median, and 50%/90% simulation bands](screenshots/screenshot_pitchKDE.webp)
 
 ---
 
